@@ -1,0 +1,330 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication and profile management
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  avatar        String?
+  password      String
+  totalXP       Int      @default(0)
+  level         Int      @default(1)
+  socialBattery Int      @default(50) // 0-100 scale
+  mood          String?  // emoji or mood description
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  teamMemberships    TeamMember[]
+  createdTeams       Team[]
+  tasks              Task[]
+  assignedTasks      TaskAssignment[]
+  comments           TaskComment[]
+  achievements       UserAchievement[]
+  avatarItems        UserAvatar[]
+  wellnessMetrics    WellnessMetric[]
+  sentInvitations    TeamInvitation[] @relation("TeamInvitationSender")
+  receivedInvitations TeamInvitation[] @relation("TeamInvitationReceiver")
+
+  @@map("users")
+}
+
+// Team model for group collaboration
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  avatar      String?
+  totalXP     Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  leaderId   String
+  leader     User   @relation(fields: [leaderId], references: [id])
+  members    TeamMember[]
+  tasks      Task[]
+  goals      Goal[]
+  invitations TeamInvitation[]
+
+  @@map("teams")
+}
+
+// TeamMember model for managing team roles
+model TeamMember {
+  id     String @id @default(cuid())
+  role   TeamRole @default(MEMBER)
+  joinedAt DateTime @default(now())
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  teamId String
+  team   Team   @relation(fields: [teamId], references: [id])
+
+  @@unique([userId, teamId])
+  @@map("team_members")
+}
+
+// Task model for tasks and missions
+model Task {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  xp          Int         @default(10)
+  dueDate     DateTime?
+  priority    Priority    @default(MEDIUM)
+  category    String?
+  isPersonal  Boolean     @default(false)
+  isRecurring Boolean     @default(false)
+  recurringInterval String? // daily, weekly, monthly
+  status      TaskStatus  @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  creatorId   String
+  creator     User        @relation(fields: [creatorId], references: [id])
+  teamId      String?
+  team        Team?       @relation(fields: [teamId], references: [id])
+  assignments TaskAssignment[]
+  comments    TaskComment[]
+  attachments TaskAttachment[]
+  subtasks    Subtask[]
+  goalId      String?
+  goal        Goal?       @relation(fields: [goalId], references: [id])
+
+  @@map("tasks")
+}
+
+// TaskAssignment model for assigning tasks to team members
+model TaskAssignment {
+  id        String   @id @default(cuid())
+  completed Boolean  @default(false)
+  completedAt DateTime?
+  createdAt DateTime @default(now())
+
+  // Relations
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([taskId, userId])
+  @@map("task_assignments")
+}
+
+// TaskComment model for task discussions
+model TaskComment {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("task_comments")
+}
+
+// TaskAttachment model for file attachments
+model TaskAttachment {
+  id        String   @id @default(cuid())
+  filename  String
+  fileUrl   String
+  fileSize  Int?
+  createdAt DateTime @default(now())
+
+  // Relations
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id])
+
+  @@map("task_attachments")
+}
+
+// Subtask model for breaking down complex tasks
+model Subtask {
+  id        String     @id @default(cuid())
+  title     String
+  completed Boolean    @default(false)
+  createdAt DateTime   @default(now())
+
+  // Relations
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id])
+
+  @@map("subtasks")
+}
+
+// Goal model for team objectives
+model Goal {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  targetXP    Int
+  currentXP   Int        @default(0)
+  deadline    DateTime?
+  status      GoalStatus @default(ACTIVE)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  teamId String
+  team   Team   @relation(fields: [teamId], references: [id])
+  tasks  Task[]
+
+  @@map("goals")
+}
+
+// Achievement model for badges and rewards
+model Achievement {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  icon        String?
+  xpThreshold Int
+  category    String?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  userAchievements UserAchievement[]
+
+  @@map("achievements")
+}
+
+// UserAchievement model for tracking earned achievements
+model UserAchievement {
+  id        String   @id @default(cuid())
+  earnedAt  DateTime @default(now())
+
+  // Relations
+  userId        String
+  user          User         @relation(fields: [userId], references: [id])
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id])
+
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}
+
+// AvatarItem model for avatar customization items
+model AvatarItem {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  type        AvatarType
+  icon        String?
+  xpCost      Int
+  createdAt   DateTime @default(now())
+
+  // Relations
+  userAvatars UserAvatar[]
+
+  @@map("avatar_items")
+}
+
+// UserAvatar model for user's avatar items
+model UserAvatar {
+  id        String   @id @default(cuid())
+  isActive  Boolean  @default(false)
+  purchasedAt DateTime @default(now())
+
+  // Relations
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  avatarItemId String
+  avatarItem  AvatarItem  @relation(fields: [avatarItemId], references: [id])
+
+  @@unique([userId, avatarItemId])
+  @@map("user_avatars")
+}
+
+// WellnessMetric model for tracking user wellness
+model WellnessMetric {
+  id        String   @id @default(cuid())
+  date      DateTime @default(now())
+  socialBattery Int
+  mood      String?
+  notes     String?
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([userId, date])
+  @@map("wellness_metrics")
+}
+
+// TeamInvitation model for team member invitations
+model TeamInvitation {
+  id        String           @id @default(cuid())
+  status    InvitationStatus @default(PENDING)
+  message   String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  // Relations
+  senderId   String
+  sender     User   @relation("TeamInvitationSender", fields: [senderId], references: [id])
+  receiverId String
+  receiver   User   @relation("TeamInvitationReceiver", fields: [receiverId], references: [id])
+  teamId     String
+  team       Team   @relation(fields: [teamId], references: [id])
+
+  @@map("team_invitations")
+}
+
+// Enums
+enum TeamRole {
+  LEADER
+  MEMBER
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum GoalStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum AvatarType {
+  HAIR
+  CLOTHING
+  ACCESSORY
+  BACKGROUND
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
