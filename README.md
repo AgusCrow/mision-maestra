@@ -1,141 +1,165 @@
-# 🚀 Welcome to Z.ai Code Scaffold
+# Misión Maestra 🚀
 
-A modern, production-ready web application scaffold powered by cutting-edge technologies, designed to accelerate your development with [Z.ai](https://chat.z.ai)'s AI-powered coding assistance.
+Un sistema de gestión de tareas gamificado que transforma la productividad del equipo a través de la gamificación. Completa misiones, gana puntos, sube de nivel y colabora con tu equipo mientras alcanzas tus objetivos.
 
-## ✨ Technology Stack
+## Características Principales
 
-This scaffold provides a robust foundation built with:
+### 🎮 Gamificación
+- **Sistema de XP**: Gana puntos de experiencia al completar tareas
+- **Niveles y Progresión**: Sube de nivel y desbloquea nuevas habilidades
+- **Logros y Medallas**: Obtén reconocimientos por tus contribuciones
+- **Avatar Personalizable**: Compra y equipa items para tu avatar
 
-### 🎯 Core Framework
-- **⚡ Next.js 15** - The React framework for production with App Router
-- **📘 TypeScript 5** - Type-safe JavaScript for better developer experience
-- **🎨 Tailwind CSS 4** - Utility-first CSS framework for rapid UI development
+### 👥 Colaboración en Equipo
+- **Gestión de Equipos**: Crea equipos, asigna roles (Líder/Miembro)
+- **Misiones Grupales**: Colabora en tareas y objetivos comunes
+- **Sistema de Invitaciones**: Invita a nuevos miembros a tu equipo
+- **Objetivos de Equipo**: Establece metas colaborativas con recompensas
 
-### 🧩 UI Components & Styling
-- **🧩 shadcn/ui** - High-quality, accessible components built on Radix UI
-- **🎯 Lucide React** - Beautiful & consistent icon library
-- **🌈 Framer Motion** - Production-ready motion library for React
-- **🎨 Next Themes** - Perfect dark mode in 2 lines of code
+### 📊 Gestión de Tareas
+- **Tareas Personales y de Equipo**: Organiza tu trabajo individual y grupal
+- **Prioridades y Categorías**: Clasifica tus tareas por importancia y tipo
+- **Fechas Límite**: Establece plazos para tus misiones
+- **Tareas Recurrentes**: Configura tareas que se repiten automáticamente
 
-### 📋 Forms & Validation
-- **🎣 React Hook Form** - Performant forms with easy validation
-- **✅ Zod** - TypeScript-first schema validation
+### 🧠 Bienestar y Salud
+- **Batería Social**: Monitorea tu energía social (0-100%)
+- **Registro de Estado de Ánimo**: Anota cómo te sientes con emojis
+- **Historial de Métricas**: Seguimiento de tu bienestar a lo largo del tiempo
 
-### 🔄 State Management & Data Fetching
-- **🐻 Zustand** - Simple, scalable state management
-- **🔄 TanStack Query** - Powerful data synchronization for React
-- **🌐 Axios** - Promise-based HTTP client
+## Tecnologías Utilizadas
 
-### 🗄️ Database & Backend
-- **🗄️ Prisma** - Next-generation Node.js and TypeScript ORM
-- **🔐 NextAuth.js** - Complete open-source authentication solution
+### Frontend
+- **Next.js 15** - Framework de React con App Router
+- **TypeScript** - Tipado estático para mayor seguridad
+- **Tailwind CSS** - Framework de CSS utility-first
+- **shadcn/ui** - Componentes UI de alta calidad
+- **Lucide React** - Iconos modernos y consistentes
 
-### 🎨 Advanced UI Features
-- **📊 TanStack Table** - Headless UI for building tables and datagrids
-- **🖱️ DND Kit** - Modern drag and drop toolkit for React
-- **📊 Recharts** - Redefined chart library built with React and D3
-- **🖼️ Sharp** - High performance image processing
+### Backend
+- **Next.js API Routes** - Endpoints RESTful
+- **Prisma ORM** - Mapeo Objeto-Relacional
+- **SQLite** - Base de datos ligera
+- **NextAuth.js** - Autenticación de usuarios
+- **bcryptjs** - Hashing de contraseñas
 
-### 🌍 Internationalization & Utilities
-- **🌍 Next Intl** - Internationalization library for Next.js
-- **📅 Date-fns** - Modern JavaScript date utility library
-- **🪝 ReactUse** - Collection of essential React hooks for modern development
+### Desarrollo
+- **ESLint** - Calidad de código
+- **Prettier** - Formateo de código
+- **Husky** - Git hooks
+- **Node.js** - Entorno de ejecución
 
-## 🎯 Why This Scaffold?
+## Instalación
 
-- **🏎️ Fast Development** - Pre-configured tooling and best practices
-- **🎨 Beautiful UI** - Complete shadcn/ui component library with advanced interactions
-- **🔒 Type Safety** - Full TypeScript configuration with Zod validation
-- **📱 Responsive** - Mobile-first design principles with smooth animations
-- **🗄️ Database Ready** - Prisma ORM configured for rapid backend development
-- **🔐 Auth Included** - NextAuth.js for secure authentication flows
-- **📊 Data Visualization** - Charts, tables, and drag-and-drop functionality
-- **🌍 i18n Ready** - Multi-language support with Next Intl
-- **🚀 Production Ready** - Optimized build and deployment settings
-- **🤖 AI-Friendly** - Structured codebase perfect for AI assistance
+### Requisitos Previos
+- Node.js 18+ 
+- npm o yarn
 
-## 🚀 Quick Start
+### Pasos de Instalación
 
-```bash
-# Install dependencies
-npm install
+1. **Clonar el repositorio**
+   ```bash
+   git clone https://github.com/AgusCrow/mision-maestra.git
+   cd mision-maestra
+   ```
 
-# Start development server
-npm run dev
+2. **Instalar dependencias**
+   ```bash
+   npm install
+   ```
 
-# Build for production
-npm run build
+3. **Configurar variables de entorno**
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Editar el archivo `.env` con tus configuraciones:
+   ```env
+   DATABASE_URL="file:./dev.db"
+   NEXTAUTH_URL="http://localhost:3000"
+   NEXTAUTH_SECRET="tu_secreto_aqui"
+   ```
 
-# Start production server
-npm start
-```
+4. **Inicializar la base de datos**
+   ```bash
+   npx prisma generate
+   npx prisma db push
+   ```
 
-Open [http://localhost:3000](http://localhost:3000) to see your application running.
+5. **Iniciar el servidor de desarrollo**
+   ```bash
+   npm run dev
+   ```
 
-## 🤖 Powered by Z.ai
+6. **Abrir la aplicación**
+   Visita [http://localhost:3000](http://localhost:3000) en tu navegador.
 
-This scaffold is optimized for use with [Z.ai](https://chat.z.ai) - your AI assistant for:
+## Uso
 
-- **💻 Code Generation** - Generate components, pages, and features instantly
-- **🎨 UI Development** - Create beautiful interfaces with AI assistance  
-- **🔧 Bug Fixing** - Identify and resolve issues with intelligent suggestions
-- **📝 Documentation** - Auto-generate comprehensive documentation
-- **🚀 Optimization** - Performance improvements and best practices
+### Para Usuarios Nuevos
 
-Ready to build something amazing? Start chatting with Z.ai at [chat.z.ai](https://chat.z.ai) and experience the future of AI-powered development!
+1. **Crear una cuenta**: Regístrate con tu email y contraseña
+2. **Completar tu perfil**: Agrega tu nombre y avatar
+3. **Crear o unirte a un equipo**: 
+   - Crea tu propio equipo como Líder
+   - Espera una invitación para unirte a un equipo existente
+4. **Comenzar a crear misiones**: Transforma tus tareas en misiones emocionantes
+5. **Colaborar y ganar XP**: Completa tareas y sube de nivel
 
-## 📁 Project Structure
+### Para Desarrolladores
 
+#### Estructura del Proyecto
 ```
 src/
-├── app/                 # Next.js App Router pages
-├── components/          # Reusable React components
-│   └── ui/             # shadcn/ui components
-├── hooks/              # Custom React hooks
-└── lib/                # Utility functions and configurations
+├── app/                    # App Router de Next.js
+│   ├── api/               # Rutas API
+│   ├── auth/              # Páginas de autenticación
+│   ├── dashboard/         # Dashboard principal
+│   └── ...                # Otras páginas
+├── components/            # Componentes React
+│   ├── ui/                # Componentes shadcn/ui
+│   └── providers.tsx      # Proveedores de contexto
+├── lib/                   # Utilidades y configuración
+│   ├── auth.ts           # Configuración de NextAuth
+│   ├── db.ts             # Cliente Prisma
+│   └── ...               # Otras utilidades
+└── prisma/                # Esquema de base de datos
 ```
 
-## 🎨 Available Features & Components
+#### Comandos Útiles
+```bash
+# Desarrollo
+npm run dev          # Iniciar servidor de desarrollo
+npm run build        # Construir para producción
+npm run start        # Iniciar servidor de producción
+npm run lint         # Ejecutar ESLint
 
-This scaffold includes a comprehensive set of modern web development tools:
+# Base de datos
+npx prisma studio    # Abrir Prisma Studio
+npx prisma generate  # Generar cliente Prisma
+npx prisma db push   # Sincronizar esquema con BD
+```
 
-### 🧩 UI Components (shadcn/ui)
-- **Layout**: Card, Separator, Aspect Ratio, Resizable Panels
-- **Forms**: Input, Textarea, Select, Checkbox, Radio Group, Switch
-- **Feedback**: Alert, Toast (Sonner), Progress, Skeleton
-- **Navigation**: Breadcrumb, Menubar, Navigation Menu, Pagination
-- **Overlay**: Dialog, Sheet, Popover, Tooltip, Hover Card
-- **Data Display**: Badge, Avatar, Calendar
+## Contribuir
 
-### 📊 Advanced Data Features
-- **Tables**: Powerful data tables with sorting, filtering, pagination (TanStack Table)
-- **Charts**: Beautiful visualizations with Recharts
-- **Forms**: Type-safe forms with React Hook Form + Zod validation
+¡Las contribuciones son bienvenidas! Por favor, sigue estos pasos:
 
-### 🎨 Interactive Features
-- **Animations**: Smooth micro-interactions with Framer Motion
-- **Drag & Drop**: Modern drag-and-drop functionality with DND Kit
-- **Theme Switching**: Built-in dark/light mode support
+1. **Hacer un Fork** del repositorio
+2. **Crear una rama** para tu feature (`git checkout -b feature/amazing-feature`)
+3. **Hacer Commit** de tus cambios (`git commit -m 'Add amazing feature'`)
+4. **Hacer Push** a la rama (`git push origin feature/amazing-feature`)
+5. **Abrir un Pull Request**
 
-### 🔐 Backend Integration
-- **Authentication**: Ready-to-use auth flows with NextAuth.js
-- **Database**: Type-safe database operations with Prisma
-- **API Client**: HTTP requests with Axios + TanStack Query
-- **State Management**: Simple and scalable with Zustand
+## Licencia
 
-### 🌍 Production Features
-- **Internationalization**: Multi-language support with Next Intl
-- **Image Optimization**: Automatic image processing with Sharp
-- **Type Safety**: End-to-end TypeScript with Zod validation
-- **Essential Hooks**: 100+ useful React hooks with ReactUse for common patterns
+Este proyecto está bajo la Licencia MIT - mira el archivo [LICENSE](LICENSE) para detalles.
 
-## 🤝 Get Started with Z.ai
+## Contacto
 
-1. **Clone this scaffold** to jumpstart your project
-2. **Visit [chat.z.ai](https://chat.z.ai)** to access your AI coding assistant
-3. **Start building** with intelligent code generation and assistance
-4. **Deploy with confidence** using the production-ready setup
+Agus Crow - [@AgusCrow](https://github.com/AgusCrow)
+
+Link del Proyecto: [https://github.com/AgusCrow/mision-maestra](https://github.com/AgusCrow/mision-maestra)
 
 ---
 
-Built with ❤️ for the developer community. Supercharged by [Z.ai](https://chat.z.ai) 🚀
+⭐ Si este proyecto te fue útil, ¡por favor dale una estrella!
