@@ -11,10 +11,23 @@ const createTaskSchema = z.object({
   dueDate: z.string().optional(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH"]).default("MEDIUM"),
   category: z.string().max(50).optional(),
-  isPersonal: z.boolean().default(false),
+  isPersonal: z.boolean().default(true),
   isRecurring: z.boolean().default(false),
   recurringInterval: z.enum(["daily", "weekly", "monthly"]).optional(),
   teamId: z.string().optional(),
+  goalId: z.string().optional(),
+});
+
+const updateTaskSchema = z.object({
+  title: z.string().min(1).max(200).optional(),
+  description: z.string().max(1000).optional(),
+  xp: z.number().min(1).max(1000).optional(),
+  dueDate: z.string().optional(),
+  priority: z.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
+  category: z.string().max(50).optional(),
+  status: z.enum(["PENDING", "IN_PROGRESS", "COMPLETED", "CANCELLED"]).optional(),
+  isRecurring: z.boolean().optional(),
+  recurringInterval: z.enum(["daily", "weekly", "monthly"]).optional(),
   goalId: z.string().optional(),
 });
 
@@ -31,190 +44,98 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const teamId = searchParams.get("teamId");
-    const isPersonal = searchParams.get("isPersonal") === "true";
+    const status = searchParams.get("status");
+    const priority = searchParams.get("priority");
+    const category = searchParams.get("category");
 
-    let tasks;
-
+    // Build where clause based on filters
+    const where: any = {};
+    
     if (teamId) {
-      // Get tasks for a specific team
-      tasks = await db.task.findMany({
+      // Team tasks - user must be a member of the team
+      const teamMember = await db.teamMember.findUnique({
         where: {
-          teamId: teamId,
-          isPersonal: false,
-        },
-        include: {
-          creator: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              avatar: true,
-            },
+          userId_teamId: {
+            userId: session.user.id,
+            teamId: teamId,
           },
-          team: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-          assignments: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                  avatar: true,
-                },
-              },
-            },
-          },
-          subtasks: true,
-          comments: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  avatar: true,
-                },
-              },
-            },
-            orderBy: {
-              createdAt: "desc",
-            },
-          },
-          goal: {
-            select: {
-              id: true,
-              title: true,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: "desc",
         },
       });
-    } else if (isPersonal) {
-      // Get personal tasks
-      tasks = await db.task.findMany({
-        where: {
-          creatorId: session.user.id,
-          isPersonal: true,
-        },
-        include: {
-          creator: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              avatar: true,
-            },
-          },
-          assignments: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                  avatar: true,
-                },
-              },
-            },
-          },
-          subtasks: true,
-          comments: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  avatar: true,
-                },
-              },
-            },
-            orderBy: {
-              createdAt: "desc",
-            },
-          },
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
+
+      if (!teamMember) {
+        return NextResponse.json(
+          { error: "No eres miembro de este equipo" },
+          { status: 403 }
+        );
+      }
+
+      where.teamId = teamId;
     } else {
-      // Get all tasks for user (personal and assigned team tasks)
-      tasks = await db.task.findMany({
-        where: {
-          OR: [
-            {
-              creatorId: session.user.id,
-              isPersonal: true,
-            },
-            {
-              assignments: {
-                some: {
-                  userId: session.user.id,
-                },
-              },
-            },
-          ],
-        },
-        include: {
-          creator: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              avatar: true,
-            },
-          },
-          team: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-          assignments: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                  avatar: true,
-                },
-              },
-            },
-          },
-          subtasks: true,
-          comments: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  avatar: true,
-                },
-              },
-            },
-            orderBy: {
-              createdAt: "desc",
-            },
-          },
-          goal: {
-            select: {
-              id: true,
-              title: true,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
+      // Personal tasks
+      where.isPersonal = true;
+      where.creatorId = session.user.id;
     }
+
+    if (status) {
+      where.status = status;
+    }
+
+    if (priority) {
+      where.priority = priority;
+    }
+
+    if (category) {
+      where.category = category;
+    }
+
+    const tasks = await db.task.findMany({
+      where,
+      include: {
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+          },
+        },
+        team: teamId ? {
+          select: {
+            id: true,
+            name: true,
+          },
+        } : false,
+        assignments: teamId ? {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true,
+              },
+            },
+          },
+        } : false,
+        goal: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+        _count: {
+          select: {
+            comments: true,
+            subtasks: true,
+          },
+        },
+      },
+      orderBy: [
+        { priority: "desc" },
+        { dueDate: "asc" },
+        { createdAt: "desc" },
+      ],
+    });
 
     return NextResponse.json({ tasks });
   } catch (error) {
@@ -238,15 +159,15 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const taskData = createTaskSchema.parse(body);
+    const validatedData = createTaskSchema.parse(body);
 
-    // If it's a team task, check if user is a member of the team
-    if (taskData.teamId && !taskData.isPersonal) {
+    // If team task, verify user is a member of the team
+    if (validatedData.teamId) {
       const teamMember = await db.teamMember.findUnique({
         where: {
           userId_teamId: {
             userId: session.user.id,
-            teamId: taskData.teamId,
+            teamId: validatedData.teamId,
           },
         },
       });
@@ -259,22 +180,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create task
+    // Convert dueDate string to Date if provided
+    const taskData = {
+      ...validatedData,
+      dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : null,
+      creatorId: session.user.id,
+    };
+
     const task = await db.task.create({
-      data: {
-        title: taskData.title,
-        description: taskData.description,
-        xp: taskData.xp,
-        dueDate: taskData.dueDate ? new Date(taskData.dueDate) : null,
-        priority: taskData.priority,
-        category: taskData.category,
-        isPersonal: taskData.isPersonal,
-        isRecurring: taskData.isRecurring,
-        recurringInterval: taskData.recurringInterval,
-        creatorId: session.user.id,
-        teamId: taskData.teamId,
-        goalId: taskData.goalId,
-      },
+      data: taskData,
       include: {
         creator: {
           select: {
@@ -284,36 +198,12 @@ export async function POST(request: NextRequest) {
             avatar: true,
           },
         },
-        team: {
+        team: validatedData.teamId ? {
           select: {
             id: true,
             name: true,
           },
-        },
-        assignments: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                avatar: true,
-              },
-            },
-          },
-        },
-        subtasks: true,
-        comments: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                avatar: true,
-              },
-            },
-          },
-        },
+        } : false,
         goal: {
           select: {
             id: true,
