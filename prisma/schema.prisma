@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,124 +8,109 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  username     String   @unique
-  email        String?  @unique
-  passwordHash String
-  displayName  String?
-  avatar       String?
-  level        Int      @default(1)
-  experience   Int      @default(0)
-  points       Int      @default(0)
-  coins        Int      @default(100) // Moneda virtual para recompensas
-  isOnline     Boolean  @default(false)
-  lastSeen     DateTime?
+  id              String            @id @default(cuid())
+  username        String            @unique
+  email           String?           @unique
+  passwordHash    String
+  displayName     String?
+  avatar          String?
+  level           Int               @default(1)
+  experience      Int               @default(0)
+  points          Int               @default(0)
+  coins           Int               @default(100)
+  isOnline        Boolean           @default(false)
+  lastSeen        DateTime?
   currentActivity String?
-  mood         String?  // happy, focused, tired, energetic, stressed, relaxed
-  socialBattery Int?    // 0-100 percentage
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  // Relations
-  teamMemberships TeamMember[]
-  createdTeams    Team[]       @relation("TeamCreator")
-  assignedTasks   Task[]       @relation("AssignedTasks")
-  createdTasks    Task[]       @relation("CreatedTasks")
-  taskCompletions TaskCompletion[]
-  invitations     Invitation[]
-  sentInvitations Invitation[] @relation("Inviter")
-  achievements    UserAchievement[]
+  mood            String?
+  socialBattery   Int?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
   inventory       InventoryItem[]
+  sentInvitations Invitation[]      @relation("Inviter")
+  invitations     Invitation[]
   logs            ServerLog[]
+  taskCompletions TaskCompletion[]
+  assignedTasks   Task[]            @relation("AssignedTasks")
+  createdTasks    Task[]            @relation("CreatedTasks")
+  teamMemberships TeamMember[]
+  createdTeams    Team[]            @relation("TeamCreator")
+  achievements    UserAchievement[]
   quests          UserQuest[]
 
   @@map("users")
 }
 
 model Team {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  avatar      String?
-  isActive    Boolean  @default(true)
-  score       Int      @default(0) // Puntuación del equipo
-  level       Int      @default(1) // Nivel del equipo
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  creatorId   String
-  creator     User   @relation("TeamCreator", fields: [creatorId], references: [id])
-  members     TeamMember[]
-  tasks       Task[]
-  invitations Invitation[]
+  id           String            @id @default(cuid())
+  name         String
+  description  String?
+  avatar       String?
+  isActive     Boolean           @default(true)
+  score        Int               @default(0)
+  level        Int               @default(1)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  creatorId    String
+  invitations  Invitation[]
+  tasks        Task[]
   achievements TeamAchievement[]
+  members      TeamMember[]
+  creator      User              @relation("TeamCreator", fields: [creatorId], references: [id])
 
   @@map("teams")
 }
 
 model TeamMember {
-  id       String          @id @default(cuid())
-  joinedAt DateTime        @default(now())
-  role     TeamRole        @default(MEMBER)
-  isActive Boolean         @default(true)
-  score    Int             @default(0) // Contribución individual al equipo
-
-  // Relations
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  teamId String
-  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  id       String   @id @default(cuid())
+  joinedAt DateTime @default(now())
+  role     TeamRole @default(MEMBER)
+  isActive Boolean  @default(true)
+  score    Int      @default(0)
+  userId   String
+  teamId   String
+  team     Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, teamId])
   @@map("team_members")
 }
 
 model Task {
-  id          String      @id @default(cuid())
+  id          String           @id @default(cuid())
   title       String
   description String?
-  status      TaskStatus  @default(PENDING)
-  priority    TaskPriority @default(MEDIUM)
-  difficulty  Int         @default(1) // 1-5 estrellas de dificultad
+  status      TaskStatus       @default(PENDING)
+  priority    TaskPriority     @default(MEDIUM)
+  difficulty  Int              @default(1)
   dueDate     DateTime?
-  points      Int         @default(10)
-  coins       Int         @default(5)  // Recompensa en monedas
-  experience  Int         @default(25) // Experiencia otorgada
-  questId     String?     // Si es parte de una misión
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  points      Int              @default(10)
+  coins       Int              @default(5)
+  experience  Int              @default(25)
+  questId     String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
   completedAt DateTime?
-
-  // Relations
   creatorId   String
-  creator     User   @relation("CreatedTasks", fields: [creatorId], references: [id])
-  
   assigneeId  String?
-  assignee    User?  @relation("AssignedTasks", fields: [assigneeId], references: [id])
-  
   teamId      String
-  team        Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  
   completions TaskCompletion[]
-  quest       Quest? @relation(fields: [questId], references: [id])
+  quest       Quest?           @relation(fields: [questId], references: [id])
+  team        Team             @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  assignee    User?            @relation("AssignedTasks", fields: [assigneeId], references: [id])
+  creator     User             @relation("CreatedTasks", fields: [creatorId], references: [id])
 
   @@map("tasks")
 }
 
 model TaskCompletion {
-  id        String   @id @default(cuid())
+  id          String   @id @default(cuid())
   completedAt DateTime @default(now())
-  notes     String?
-  rating    Int?     @default(5) // Calificación de la calidad del trabajo
-
-  // Relations
-  taskId String
-  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notes       String?
+  rating      Int?     @default(5)
+  taskId      String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
   @@unique([taskId, userId])
   @@map("task_completions")
@@ -143,39 +122,33 @@ model Invitation {
   message   String?
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
-
-  // Relations
-  teamId String
-  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  
+  teamId    String
   inviteeId String
-  invitee   User   @relation(fields: [inviteeId], references: [id], onDelete: Cascade)
-  
   inviterId String
-  inviter   User   @relation("Inviter", fields: [inviterId], references: [id], onDelete: Cascade)
+  inviter   User             @relation("Inviter", fields: [inviterId], references: [id], onDelete: Cascade)
+  invitee   User             @relation(fields: [inviteeId], references: [id], onDelete: Cascade)
+  team      Team             @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
   @@map("invitations")
 }
 
 model Quest {
-  id          String   @id @default(cuid())
+  id          String        @id @default(cuid())
   title       String
   description String
-  type        QuestType @default(DAILY)
-  difficulty  Int      @default(1)
-  points      Int      @default(50)
-  coins       Int      @default(25)
-  experience  Int      @default(100)
-  isActive    Boolean  @default(true)
+  type        QuestType     @default(DAILY)
+  difficulty  Int           @default(1)
+  points      Int           @default(50)
+  coins       Int           @default(25)
+  experience  Int           @default(100)
+  isActive    Boolean       @default(true)
   startDate   DateTime?
   endDate     DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  rewards     QuestReward[]
   tasks       Task[]
   userQuests  UserQuest[]
-  rewards     QuestReward[]
 
   @@map("quests")
 }
@@ -188,115 +161,97 @@ model UserQuest {
   startedAt   DateTime?
   completedAt DateTime?
   createdAt   DateTime    @default(now())
-
-  // Relations
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  questId String
-  quest   Quest  @relation(fields: [questId], references: [id], onDelete: Cascade)
+  userId      String
+  questId     String
+  quest       Quest       @relation(fields: [questId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, questId])
   @@map("user_quests")
 }
 
 model QuestReward {
-  id          String   @id @default(cuid())
+  id          String     @id @default(cuid())
   type        RewardType
   amount      Int
   description String?
-
-  // Relations
-  questId String
-  quest   Quest  @relation(fields: [questId], references: [id], onDelete: Cascade)
+  questId     String
+  quest       Quest      @relation(fields: [questId], references: [id], onDelete: Cascade)
 
   @@map("quest_rewards")
 }
 
 model Achievement {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  description String
-  icon        String?
-  category    String   @default("general") // general, combat, social, exploration
-  condition   String   // JSON string describing the condition
-  points      Int      @default(0)
-  coins       Int      @default(0)
-  experience  Int      @default(0)
-  isHidden    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-
-  // Relations
-  userAchievements UserAchievement[]
+  id               String            @id @default(cuid())
+  name             String            @unique
+  description      String
+  icon             String?
+  category         String            @default("general")
+  condition        String
+  points           Int               @default(0)
+  coins            Int               @default(0)
+  experience       Int               @default(0)
+  isHidden         Boolean           @default(false)
+  createdAt        DateTime          @default(now())
   teamAchievements TeamAchievement[]
+  userAchievements UserAchievement[]
 
   @@map("achievements")
 }
 
 model UserAchievement {
-  id            String   @id @default(cuid())
-  unlockedAt    DateTime @default(now())
-
-  // Relations
+  id            String      @id @default(cuid())
+  unlockedAt    DateTime    @default(now())
   userId        String
-  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
   achievementId String
   achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, achievementId])
   @@map("user_achievements")
 }
 
 model TeamAchievement {
-  id            String   @id @default(cuid())
-  unlockedAt    DateTime @default(now())
-
-  // Relations
+  id            String      @id @default(cuid())
+  unlockedAt    DateTime    @default(now())
   teamId        String
-  team          Team         @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  
   achievementId String
   achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  team          Team        @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
   @@unique([teamId, achievementId])
   @@map("team_achievements")
 }
 
 model InventoryItem {
-  id          String   @id @default(cuid())
+  id          String     @id @default(cuid())
   name        String
   description String?
-  type        ItemType @default(CONSUMABLE)
+  type        ItemType   @default(CONSUMABLE)
   rarity      ItemRarity @default(COMMON)
-  value       Int      @default(0)
-  quantity    Int      @default(1)
-  isEquipped  Boolean  @default(false)
-  properties  String?  // JSON string for item properties
-  createdAt   DateTime @default(now())
-
-  // Relations
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  value       Int        @default(0)
+  quantity    Int        @default(1)
+  isEquipped  Boolean    @default(false)
+  properties  String?
+  createdAt   DateTime   @default(now())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("inventory_items")
 }
 
 model ServerLog {
-  id        String       @id @default(cuid())
-  level     LogLevel     @default(INFO)
+  id        String   @id @default(cuid())
+  level     LogLevel @default(INFO)
   message   String
-  metadata  String?      // JSON string for additional data
-  createdAt DateTime     @default(now())
-
-  // Relations
-  userId String?
-  user   User?  @relation(fields: [userId], references: [id])
+  metadata  String?
+  createdAt DateTime @default(now())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
 
   @@map("server_logs")
 }
 
-// Enums
 enum TeamRole {
   OWNER
   ADMIN
