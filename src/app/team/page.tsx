@@ -184,17 +184,7 @@ export default function TeamPage() {
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Panel de Estado Personal */}
-              <div className="lg:col-span-1">
-                <MemberStatusControls teamId={team.id} userId={user.id} />
-              </div>
-
-              {/* Panel de Miembros del Equipo */}
-              <div className="lg:col-span-2">
-                <TeamMembersPanel teamId={team.id} currentUserId={user.id} />
-              </div>
-            </div>
+            <TeamMembersPanel teamId={team.id} currentUserId={user.id} />
           </TabsContent>
 
           <TabsContent value="tasks" className="space-y-6">
