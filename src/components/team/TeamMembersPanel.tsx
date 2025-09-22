@@ -39,7 +39,7 @@ import {
   HeartPulse,
   GraduationCap
 } from 'lucide-react'
-import { useSocket } from '@/hooks/useSocket'
+import { useSocket } from '@/hooks/use-socket'
 import { CreateTaskModal } from '@/components/tasks/CreateTaskModal'
 
 interface TeamMember {

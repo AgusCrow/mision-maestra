@@ -19,7 +19,7 @@ import {
   Shield,
   Sword
 } from 'lucide-react'
-import { useSocket } from '@/hooks/useSocket'
+import { useSocket } from '@/hooks/use-socket'
 
 interface Task {
   id: string

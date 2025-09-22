@@ -22,7 +22,7 @@ import { TeamMembersPanel } from '@/components/team/TeamMembersPanel'
 import { MemberStatusControls } from '@/components/team/MemberStatusControls'
 import { CreateTaskModal } from '@/components/tasks/CreateTaskModal'
 import { TaskList } from '@/components/tasks/TaskList'
-import { useSocket } from '@/hooks/useSocket'
+import { useSocket } from '@/hooks/use-socket'
 
 interface Team {
   id: string

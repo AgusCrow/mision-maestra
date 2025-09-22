@@ -17,7 +17,7 @@ import {
   Plus,
   Minus
 } from 'lucide-react'
-import { useSocket } from '@/hooks/useSocket'
+import { useSocket } from '@/hooks/use-socket'
 
 type Mood = 'happy' | 'focused' | 'tired' | 'energetic' | 'stressed' | 'relaxed'
 
