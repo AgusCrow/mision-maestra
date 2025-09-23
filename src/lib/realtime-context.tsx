@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { signalRService } from './api/signalr';
 import { useAuth } from './auth-context';
+import { toast } from '@/hooks/use-toast';
 
 interface OnlineUser {
   id: string;
@@ -119,26 +120,70 @@ export function RealTimeProvider({ children }: RealTimeProviderProps) {
 
       signalRService.onEvent('onTeamMessageReceived', (data: TeamMessage) => {
         setTeamMessages(prev => [...prev, data].slice(-50)); // Keep last 50 messages
+        
+        // Show toast notification for new team messages
+        if (data.userId !== user?.id) { // Don't show notification for own messages
+          toast({
+            title: "Nuevo mensaje de equipo",
+            description: `${data.userName}: ${data.message}`,
+            duration: 5000,
+          });
+        }
       });
 
       signalRService.onEvent('onTaskUpdated', (data: TaskUpdate) => {
         setTaskUpdates(prev => [data, ...prev].slice(0, 20)); // Keep last 20 updates
+        
+        // Show toast notification for task updates
+        toast({
+          title: "Tarea actualizada",
+          description: `La tarea ha sido actualizada por ${data.updatedBy}`,
+          duration: 3000,
+        });
       });
 
       signalRService.onEvent('onTaskCompleted', (data: TaskCompletion) => {
         setTaskCompletions(prev => [data, ...prev].slice(0, 20)); // Keep last 20 completions
+        
+        // Show toast notification for task completions
+        const isOwnTask = data.completedBy === user?.id;
+        toast({
+          title: isOwnTask ? "¡Tarea completada!" : "Tarea completada",
+          description: isOwnTask 
+            ? `Has ganado ${data.xp} XP por completar la tarea` 
+            : `${data.completedBy} completó una tarea y ganó ${data.xp} XP`,
+          duration: 5000,
+        });
       });
 
       signalRService.onEvent('onTeamInvitationReceived', (data: TeamInvitation) => {
         setTeamInvitations(prev => [data, ...prev].slice(0, 10)); // Keep last 10 invitations
+        
+        // Show toast notification for team invitations
+        toast({
+          title: "Nueva invitación de equipo",
+          description: `Has sido invitado a unirte a "${data.teamName}"`,
+          duration: 7000,
+        });
       });
 
       signalRService.onEvent('onReconnected', () => {
         setIsConnected(true);
+        toast({
+          title: "Conexión restablecida",
+          description: "Te has vuelto a conectar al servidor en tiempo real",
+          duration: 3000,
+        });
       });
 
       signalRService.onEvent('onClose', () => {
         setIsConnected(false);
+        toast({
+          title: "Conexión perdida",
+          description: "Se ha perdido la conexión con el servidor en tiempo real",
+          duration: 5000,
+          variant: "destructive",
+        });
       });
     };
 

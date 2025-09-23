@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
+import { signalRService } from '@/lib/api/signalr';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,48 +13,65 @@ type Message = {
   timestamp: string;
 }
 
-export default function SocketDemo() {
+export default function SignalRDemo() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
-  const [socket, setSocket] = useState<any>(null);
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    const socketInstance = io({
-      path: '/api/socketio',
-    });
-
-    setSocket(socketInstance);
-
-    socketInstance.on('connect', () => {
+    // Set up SignalR event handlers
+    signalRService.onEvent('onReconnected', () => {
       setIsConnected(true);
     });
 
-    socketInstance.on('disconnect', () => {
+    signalRService.onEvent('onClose', () => {
       setIsConnected(false);
     });
 
-    socketInstance.on('message', (msg: Message) => {
-      setMessages(prev => [...prev, msg]);
+    // Custom message handler (simulating team messages)
+    signalRService.onEvent('onTeamMessageReceived', (data: any) => {
+      setMessages(prev => [...prev, {
+        text: data.message,
+        senderId: data.userName,
+        timestamp: data.timestamp
+      }]);
     });
 
+    // Start the SignalR connection
+    signalRService.start().then(() => {
+      setIsConnected(signalRService.isConnected());
+    }).catch(() => {
+      setIsConnected(false);
+    });
+
+    // Update connection state periodically
+    const interval = setInterval(() => {
+      setIsConnected(signalRService.isConnected());
+    }, 1000);
+
     return () => {
-      socketInstance.disconnect();
+      clearInterval(interval);
+      signalRService.offEvent('onReconnected');
+      signalRService.offEvent('onClose');
+      signalRService.offEvent('onTeamMessageReceived');
     };
   }, []);
 
   const sendMessage = () => {
-    if (socket && inputMessage.trim()) {
-      setMessages(prev => [...prev, {
+    if (inputMessage.trim()) {
+      // Add message to local state
+      const newMessage = {
         text: inputMessage.trim(),
-        senderId: socket.id || 'user',
+        senderId: 'user',
         timestamp: new Date().toISOString()
-      }]);
-      socket.emit('message', {
-        text: inputMessage.trim(),
-        senderId: socket.id || 'user',
-        timestamp: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, newMessage]);
+      
+      // Send via SignalR (using team message as an example)
+      signalRService.sendTeamMessage('demo-team', inputMessage.trim()).catch(() => {
+        // In mock mode, this will just log to console
       });
+      
       setInputMessage('');
     }
   };
@@ -70,7 +87,7 @@ export default function SocketDemo() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            WebSocket Demo
+            SignalR Demo
             <span className={`text-sm px-2 py-1 rounded ${isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
               {isConnected ? 'Connected' : 'Disconnected'}
             </span>
