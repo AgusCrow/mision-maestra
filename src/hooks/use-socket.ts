@@ -24,6 +24,7 @@ export const useSocket = ({ userId, username }: UseSocketProps = {}): UseSocketR
   useEffect(() => {
     // Initialize socket connection
     const socket = io(process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3000', {
+      path: '/api/socketio',
       transports: ['websocket', 'polling'],
     });
 
